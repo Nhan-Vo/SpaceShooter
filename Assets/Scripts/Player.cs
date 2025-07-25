@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -11,8 +12,10 @@ public class Player : MonoBehaviour
     private string _private_variable = "The _ symbol is usually used for private variable";
 
     [SerializeField] // Make the private variable appear in the editor while maintaining that other objects cannot interact with this variable
-    private float _privateSpeed = 5f;
-    
+    private GameObject _MissilePrefab;
+    [SerializeField]
+    private float _fireRate = 0.5f;
+    private float _nextFire = 0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -24,6 +27,15 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        CalcMovement();
+        if (Input.GetKeyDown(KeyCode.Space) && Time.time > _nextFire)
+        {
+            FireMissile();
+        }
+    }
+    void CalcMovement()
+    {
+
         // move Player to the right for 1 meter per second (If you want to move 5 meter per second, just times 5 to it)
         // Time.deltatime is real time
         // 1st method:
@@ -36,6 +48,7 @@ public class Player : MonoBehaviour
         Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
         transform.Translate(direction * speed * Time.deltaTime);
 
+        // Create player bounds:
         if (transform.position.y >= 2.5f)
         {
             transform.position = new Vector3(transform.position.x, 2.5f, 0);
@@ -44,6 +57,14 @@ public class Player : MonoBehaviour
         {
             transform.position = new Vector3(transform.position.x, 0, 0);
         }
+
+        if (transform.position.z != 0f)
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+        }
+
+        // The above bound can be simplified using clamp:
+        // transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, 0f, 2.5f), 0);
 
         if (transform.position.x > 11.3f)
         {
@@ -54,5 +75,27 @@ public class Player : MonoBehaviour
             transform.position = new Vector3(11.3f, transform.position.y, 0);
         }
 
+        //Make the spaceship tilting when moving
+
+        if (horizontalInput > 0)
+        {
+            //transform.rotation = Quaternion.Euler(0, -20, 0);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, -20, 0), Time.deltaTime * 5f);
+        }
+        else if (horizontalInput < 0)
+        {
+            //transform.rotation = Quaternion.Euler(0, 20, 0);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, 20, 0), Time.deltaTime * 5f);
+        }
+        else
+        {
+            //transform.rotation = Quaternion.Euler(0, 0, 0);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, 0, 0), Time.deltaTime * 5f);
+        }
     }
+    void FireMissile()
+        {
+            _nextFire = Time.time + _fireRate;
+            Instantiate(_MissilePrefab, new Vector3(transform.position.x, transform.position.y + 1, 0), _MissilePrefab.transform.rotation);
+        }
 }
