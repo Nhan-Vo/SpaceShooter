@@ -16,6 +16,8 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _fireRate = 0.5f;
     private float _nextFire = 0f;
+    [SerializeField]
+    private int _lives = 3;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -66,13 +68,13 @@ public class Player : MonoBehaviour
         // The above bound can be simplified using clamp:
         // transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, 0f, 2.5f), 0);
 
-        if (transform.position.x > 11.3f)
+        if (transform.position.x >= 10.3f)
         {
-            transform.position = new Vector3(-11.3f, transform.position.y, 0);
+            transform.position = new Vector3(-10.25f, transform.position.y, 0);
         }
-        else if (transform.position.x < -11.3f)
+        else if (transform.position.x <= -10.25f)
         {
-            transform.position = new Vector3(11.3f, transform.position.y, 0);
+            transform.position = new Vector3(10.3f, transform.position.y, 0);
         }
 
         //Make the spaceship tilting when moving
@@ -98,4 +100,14 @@ public class Player : MonoBehaviour
             _nextFire = Time.time + _fireRate;
             Instantiate(_MissilePrefab, new Vector3(transform.position.x, transform.position.y + 1, 0), _MissilePrefab.transform.rotation);
         }
+    public void Damage()
+    {
+        _lives -= 1;
+        // check if dead
+        if (_lives < 1)
+        {
+            Destroy(gameObject);
+        }
+
+    }
 }
